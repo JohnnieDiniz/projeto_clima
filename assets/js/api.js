@@ -1,15 +1,22 @@
 // ==========================================
-// 1. FUNÇÕES DE API (Testadas pelo Jest)
+// 1. CLASSES DE ERRO CUSTOMIZADAS (Profissional)
+// ==========================================
+class NetworkError extends Error { constructor() { super('NETWORK_ERROR'); this.name = 'NetworkError'; } }
+class ApiError extends Error { constructor() { super('API_ERROR'); this.name = 'ApiError'; } }
+class InvalidCityError extends Error { constructor() { super('INVALID_CITY'); this.name = 'InvalidCityError'; } }
+
+// ==========================================
+// 2. FUNÇÕES DE API (Testadas pelo Jest)
 // ==========================================
 export async function fetchWeatherData(lat, lon) {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
     
     const response = await fetch(url).catch(() => { 
-        throw new Error('NETWORK_ERROR'); 
+        throw new NetworkError(); 
     });
     
     if (!response.ok) {
-        throw new Error('API_ERROR');
+        throw new ApiError();
     }
     
     const data = await response.json();
@@ -18,21 +25,29 @@ export async function fetchWeatherData(lat, lon) {
 
 export async function getCityCoordinates(city) {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=pt`;
-    const response = await fetch(url).catch(() => { throw new Error('NETWORK_ERROR'); });
-    if (!response.ok) throw new Error('API_ERROR');
+    
+    const response = await fetch(url).catch(() => { 
+        throw new NetworkError(); 
+    });
+    
+    if (!response.ok) {
+        throw new ApiError();
+    }
     
     const data = await response.json();
-    if (!data.results || data.results.length === 0) throw new Error('INVALID_CITY');
+    if (!data.results || data.results.length === 0) {
+        throw new InvalidCityError();
+    }
     return data.results[0];
 }
 
 
 // ==========================================
-// 2. CÓDIGO DA TELA (Ignorado pelo Jest)
+// 3. CÓDIGO DA TELA (Ignorado pelo Jest)
 // ==========================================
 if (typeof document !== 'undefined') {
-    // Só executa se o "document" existir (ou seja, no Navegador)
     
+    // Elementos do DOM
     const cityInput = document.getElementById('city-input');
     const searchBtn = document.getElementById('search-btn');
     const locationBtn = document.getElementById('location-btn');
@@ -40,6 +55,13 @@ if (typeof document !== 'undefined') {
     const homeBtn = document.getElementById('home-btn');
     const historyContainer = document.getElementById('history-container');
     const historyChips = document.getElementById('history-chips');
+
+    // Dicionário Global (Melhoria de performance: não é recriado a cada busca)
+    const WEATHER_CODES = {
+        0: 'Céu limpo ☀️', 1: 'Principalmente limpo 🌤️', 2: 'Parcialmente nublado ⛅',
+        3: 'Nublado ☁️', 45: 'Nevoeiro 🌫️', 51: 'Chuvisco leve 🌦️',
+        61: 'Chuva 🌧️', 71: 'Neve ❄️', 95: 'Tempestade ⛈️'
+    };
 
     document.addEventListener('DOMContentLoaded', renderHistory);
 
@@ -76,7 +98,7 @@ if (typeof document !== 'undefined') {
                 renderWeather(cityName, weatherData);
                 saveToHistory(cityName);
             } catch (error) {
-                handleError(new Error('NETWORK_ERROR'));
+                handleError(new NetworkError());
             }
         }, () => {
             showError('Permissão de localização negada ou indisponível.');
@@ -102,12 +124,7 @@ if (typeof document !== 'undefined') {
     }
 
     function getWeatherDescription(code) {
-        const weatherCodes = {
-            0: 'Céu limpo ☀️', 1: 'Principalmente limpo 🌤️', 2: 'Parcialmente nublado ⛅',
-            3: 'Nublado ☁️', 45: 'Nevoeiro 🌫️', 51: 'Chuvisco leve 🌦️',
-            61: 'Chuva 🌧️', 71: 'Neve ❄️', 95: 'Tempestade ⛈️'
-        };
-        return weatherCodes[code] || 'Condição desconhecida';
+        return WEATHER_CODES[code] || 'Condição desconhecida';
     }
 
     function applyDynamicTheme(code) {
@@ -118,9 +135,11 @@ if (typeof document !== 'undefined') {
     }
 
     function renderWeather(cityName, weather) {
+        setLoadingState(false); // Libera os botões
         const description = getWeatherDescription(weather.weathercode);
         historyContainer.classList.add('hidden');
         applyDynamicTheme(weather.weathercode);
+        
         weatherResult.innerHTML = `
             <h2>${cityName}</h2>
             <p><strong>Descrição:</strong> ${description}</p>
@@ -159,22 +178,33 @@ if (typeof document !== 'undefined') {
 
     function handleError(error) {
         console.error('Detalhes do erro:', error);
-        historyContainer.classList.add('hidden');
-        document.body.className = ''; 
-        switch (error.message) {
-            case 'INVALID_CITY': showError('Cidade não encontrada. Verifique se o nome está correto.'); break;
-            case 'API_ERROR': showError('O serviço de clima está temporariamente indisponível.'); break;
-            case 'NETWORK_ERROR': showError('Erro de conexão. Verifique sua internet.'); break;
-            default: showError('Ocorreu um erro inesperado ao buscar os dados.');
+        
+        // Melhoria no tratamento de exceções (usando instanceof)
+        if (error instanceof InvalidCityError) {
+            showError('Cidade não encontrada. Verifique se o nome está correto.');
+        } else if (error instanceof ApiError) {
+            showError('O serviço de clima está temporariamente indisponível.');
+        } else if (error instanceof NetworkError) {
+            showError('Erro de conexão. Verifique sua internet.');
+        } else {
+            showError('Ocorreu um erro inesperado ao buscar os dados.');
         }
     }
 
     function showError(message) {
+        setLoadingState(false); // Libera os botões
+        historyContainer.classList.add('hidden');
+        document.body.className = ''; 
         weatherResult.innerHTML = `<p class="error-message">${message}</p>`;
         homeBtn.classList.remove('hidden');
     }
 
     function setLoadingState(isLoading) {
+        // Bloqueia os inputs para evitar múltiplos cliques (Debounce UX)
+        searchBtn.disabled = isLoading;
+        cityInput.disabled = isLoading;
+        locationBtn.disabled = isLoading;
+
         if (isLoading) {
             document.body.className = ''; 
             weatherResult.innerHTML = `
