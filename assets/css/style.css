@@ -1,0 +1,175 @@
+/* Importando uma fonte moderna e minimalista do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    /* Fundo Azul Gelo: traz leveza e remete à atmosfera */
+    background-color: #F0F8FF; 
+    /* Texto Azul Noturno: mais suave que o preto, transmite profissionalismo */
+    color: #1E293B; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    /* Branco Nuvem: destaca o card do fundo */
+    background-color: #FFFFFF;
+    width: 100%;
+    max-width: 420px;
+    padding: 40px 30px;
+    border-radius: 24px;
+    /* Sombra suave e colorida para dar um aspecto 3D moderno */
+    box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.15);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #1E293B;
+    letter-spacing: -0.5px;
+}
+
+.search-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+input {
+    width: 100%;
+    padding: 16px;
+    background-color: #F8FAFC;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #1E293B;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input::placeholder {
+    color: #94A3B8;
+}
+
+/* Efeito de foco no input com a cor principal */
+input:focus {
+    background-color: #FFFFFF;
+    border-color: #0EA5E9;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+}
+
+button {
+    padding: 16px;
+    /* Azul Céu: cor de ação, amigável e moderna */
+    background-color: #0EA5E9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Efeito de hover no botão */
+button:hover {
+    background-color: #0284C7;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(2, 132, 199, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.weather-result {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+.weather-result h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #0EA5E9;
+    margin-bottom: 10px;
+}
+
+/* Estilizando os parágrafos injetados pelo JavaScript como pequenos cards */
+.weather-result p {
+    background-color: #F8FAFC;
+    padding: 14px 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.weather-result strong {
+    font-weight: 600;
+    color: #1E293B;
+}
+
+.error-message {
+    background-color: #FEF2F2 !important;
+    color: #EF4444 !important;
+    border: 1px solid #FCA5A5;
+    justify-content: center !important;
+}
+
+/* Animação suave de entrada dos resultados */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsividade refinada */
+@media (min-width: 480px) {
+    .search-box {
+        flex-direction: row;
+    }
+    button {
+        padding: 16px 24px;
+    }
+}
+
+/* Estilo e animação para o ícone do clima */
+.weather-icon {
+    font-size: 4.5rem;
+    margin: 10px 0;
+    /* Animação de flutuar */
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
