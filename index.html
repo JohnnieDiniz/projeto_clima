@@ -14,18 +14,27 @@
             <input 
                 type="text" 
                 id="city-input" 
-                placeholder="Digite o nome da cidade (ex: São Paulo)"
+                placeholder="Digite o nome da cidade..."
                 aria-label="Nome da cidade"
             >
             <button id="search-btn">Buscar</button>
+            <!-- NOVO: Botão de GPS -->
+            <button id="location-btn" title="Usar minha localização atual">📍</button>
+        </div>
+
+        <!-- NOVO: Container do Histórico -->
+        <div id="history-container" class="history-container hidden">
+            <p>Buscas recentes:</p>
+            <div id="history-chips" class="history-chips"></div>
         </div>
 
         <section id="weather-result" class="weather-result" aria-live="polite">
-            <!-- Os dados do clima ou mensagens de erro aparecerão aqui -->
+            <!-- Dados do clima -->
         </section>
+
+        <button id="home-btn" class="home-btn hidden">Nova Busca</button>
     </main>
 
-    <!-- ATENÇÃO: Nome do arquivo alterado para api.js -->
-    <script src="assets/js/api.js"></script> 
+    <script src="assets/js/api.js"></script>
 </body>
 </html>
