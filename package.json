@@ -1,0 +1,24 @@
+{
+  "name": "projeto_clima",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JohnnieDiniz/projeto_clima.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/JohnnieDiniz/projeto_clima/issues"
+  },
+  "homepage": "https://github.com/JohnnieDiniz/projeto_clima#readme",
+  "devDependencies": {
+    "jest": "^30.4.2"
+  }
+}
