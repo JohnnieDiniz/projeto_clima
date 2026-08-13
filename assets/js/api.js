@@ -55,15 +55,25 @@ if (typeof document !== 'undefined') {
     const homeBtn = document.getElementById('home-btn');
     const historyContainer = document.getElementById('history-container');
     const historyChips = document.getElementById('history-chips');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
 
-    // Dicionário Global (Melhoria de performance: não é recriado a cada busca)
+    // Dicionário Global
     const WEATHER_CODES = {
         0: 'Céu limpo ☀️', 1: 'Principalmente limpo 🌤️', 2: 'Parcialmente nublado ⛅',
         3: 'Nublado ☁️', 45: 'Nevoeiro 🌫️', 51: 'Chuvisco leve 🌦️',
         61: 'Chuva 🌧️', 71: 'Neve ❄️', 95: 'Tempestade ⛈️'
     };
 
-    document.addEventListener('DOMContentLoaded', renderHistory);
+    document.addEventListener('DOMContentLoaded', () => {
+        renderHistory();
+        
+        // Inicializa o Tema Salvo no LocalStorage
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            if (themeToggleBtn) themeToggleBtn.textContent = '☀️';
+        }
+    });
 
     searchBtn.addEventListener('click', handleSearch);
     cityInput.addEventListener('keypress', (event) => {
@@ -74,10 +84,20 @@ if (typeof document !== 'undefined') {
         weatherResult.innerHTML = ''; 
         cityInput.value = ''; 
         homeBtn.classList.add('hidden'); 
-        document.body.className = ''; 
+        document.body.classList.remove('theme-sunny', 'theme-cloudy', 'theme-rainy'); 
         renderHistory();
         cityInput.focus(); 
     });
+
+    // Lógica do Botão de Dark/Light Mode
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
+    }
 
     locationBtn.addEventListener('click', () => {
         if (!navigator.geolocation) {
@@ -128,14 +148,14 @@ if (typeof document !== 'undefined') {
     }
 
     function applyDynamicTheme(code) {
-        document.body.className = ''; 
+        document.body.classList.remove('theme-sunny', 'theme-cloudy', 'theme-rainy'); 
         if (code <= 1) document.body.classList.add('theme-sunny');
         else if (code === 2 || code === 3 || code === 45) document.body.classList.add('theme-cloudy');
         else if (code >= 51) document.body.classList.add('theme-rainy');
     }
 
     function renderWeather(cityName, weather) {
-        setLoadingState(false); // Libera os botões
+        setLoadingState(false); 
         const description = getWeatherDescription(weather.weathercode);
         historyContainer.classList.add('hidden');
         applyDynamicTheme(weather.weathercode);
@@ -179,7 +199,6 @@ if (typeof document !== 'undefined') {
     function handleError(error) {
         console.error('Detalhes do erro:', error);
         
-        // Melhoria no tratamento de exceções (usando instanceof)
         if (error instanceof InvalidCityError) {
             showError('Cidade não encontrada. Verifique se o nome está correto.');
         } else if (error instanceof ApiError) {
@@ -192,21 +211,20 @@ if (typeof document !== 'undefined') {
     }
 
     function showError(message) {
-        setLoadingState(false); // Libera os botões
+        setLoadingState(false); 
         historyContainer.classList.add('hidden');
-        document.body.className = ''; 
+        document.body.classList.remove('theme-sunny', 'theme-cloudy', 'theme-rainy'); 
         weatherResult.innerHTML = `<p class="error-message">${message}</p>`;
         homeBtn.classList.remove('hidden');
     }
 
     function setLoadingState(isLoading) {
-        // Bloqueia os inputs para evitar múltiplos cliques (Debounce UX)
         searchBtn.disabled = isLoading;
         cityInput.disabled = isLoading;
         locationBtn.disabled = isLoading;
 
         if (isLoading) {
-            document.body.className = ''; 
+            document.body.classList.remove('theme-sunny', 'theme-cloudy', 'theme-rainy'); 
             weatherResult.innerHTML = `
                 <div class="loading-container">
                     <div class="spinner"></div>
@@ -217,22 +235,4 @@ if (typeof document !== 'undefined') {
             historyContainer.classList.add('hidden');
         }
     }
-    const themeToggleBtn = document.getElementById('theme-toggle-btn');
-    
-    // Verifica se o usuário já tinha salvo a preferência anteriormente
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-        themeToggleBtn.textContent = '☀️';
-    }
-
-    themeToggleBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-        
-        // Salva a preferência no LocalStorage
-        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-    });
 }
